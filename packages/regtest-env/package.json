@@ -11,6 +11,7 @@
     "docker-compose.yml",
     "server.Dockerfile",
     "wallet.Dockerfile",
+    "setup.js",
     "README.md"
   ],
   "keywords": [

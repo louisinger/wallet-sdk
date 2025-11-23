@@ -4,6 +4,7 @@
 const { spawnSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const { setupArkEnvironment } = require('../setup')
 
 const pkgRoot = path.resolve(__dirname, '..')
 const composeFile = path.join(pkgRoot, 'docker-compose.yml')
@@ -14,7 +15,9 @@ if (!fs.existsSync(composeFile)) {
   process.exit(1)
 }
 
-const allowedCommands = new Set(['up', 'down', 'build', 'logs', 'ps', 'status', 'restart'])
+const composeCommands = new Set(['up', 'down', 'build', 'logs', 'ps', 'status', 'restart'])
+const allowedCommands = new Set([...composeCommands, 'setup'])
+let composeCommand = null
 
 const parsed = parseArgs(process.argv.slice(2))
 const { command, options, passthrough } = parsed
@@ -24,25 +27,39 @@ if (options.help) {
   process.exit(0)
 }
 
-const composeCommand = detectComposeCommand()
-
-if (command === 'up') {
+if (command === 'setup') {
   warnMissingNetwork(options.network)
-  const upArgs = ['up']
-  if (!options.foreground) {
-    upArgs.push('-d')
+  setupArkEnvironment({
+    serverUrl: options.serverUrl,
+    explorerUrl: options.explorerUrl,
+    password: options.password,
+    network: options.network
+  })
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('Setup failed:', error)
+      process.exit(1)
+    })
+} else if (composeCommands.has(command)) {
+  composeCommand = detectComposeCommand()
+  if (command === 'up') {
+    warnMissingNetwork(options.network)
+    const upArgs = ['up']
+    if (!options.foreground) {
+      upArgs.push('-d')
+    }
+    runCompose([...upArgs, ...passthrough])
+  } else if (command === 'down') {
+    runCompose(['down', ...passthrough])
+  } else if (command === 'build') {
+    runCompose(['build', ...passthrough])
+  } else if (command === 'logs') {
+    runCompose(['logs', ...passthrough])
+  } else if (command === 'ps' || command === 'status') {
+    runCompose(['ps', ...passthrough])
+  } else if (command === 'restart') {
+    runCompose(['restart', ...passthrough])
   }
-  runCompose([...upArgs, ...passthrough])
-} else if (command === 'down') {
-  runCompose(['down', ...passthrough])
-} else if (command === 'build') {
-  runCompose(['build', ...passthrough])
-} else if (command === 'logs') {
-  runCompose(['logs', ...passthrough])
-} else if (command === 'ps' || command === 'status') {
-  runCompose(['ps', ...passthrough])
-} else if (command === 'restart') {
-  runCompose(['restart', ...passthrough])
 } else {
   console.error(`Unknown command "${command}"`)
   printHelp()
@@ -106,7 +123,10 @@ function parseArgs(argv) {
     network: process.env.NIGIRI_NETWORK || 'nigiri',
     projectName: defaultProject,
     foreground: false,
-    help: false
+    help: false,
+    serverUrl: process.env.ARK_SERVER_URL || 'http://localhost:7070',
+    explorerUrl: process.env.ARK_EXPLORER_URL || 'http://chopsticks:3000',
+    password: process.env.ARK_PASSWORD || 'secret'
   }
 
   let command = null
@@ -161,6 +181,21 @@ function parseArgs(argv) {
       continue
     }
 
+    if (token.startsWith('--server-url')) {
+      options.serverUrl = readFlagValue(token, tokens, '--server-url')
+      continue
+    }
+
+    if (token.startsWith('--explorer-url')) {
+      options.explorerUrl = readFlagValue(token, tokens, '--explorer-url')
+      continue
+    }
+
+    if (token.startsWith('--password')) {
+      options.password = readFlagValue(token, tokens, '--password')
+      continue
+    }
+
     if (!token.startsWith('-') && !command) {
       command = token
       continue
@@ -206,6 +241,7 @@ Commands:
   logs       Tail docker compose logs
   ps|status  Show container status
   restart    Restart the running containers
+  setup      Run the Nigiri-based provisioning routine (arkd wallet + ark client)
 
 Options:
   --branch <branch>         Git branch/tag of arkade-os/arkd (default: next-version)
@@ -213,6 +249,9 @@ Options:
   --network <name>          External Docker network to join (default: nigiri)
   --project-name <name>     Compose project name (default: ark-regtest)
   --foreground              Run "up" in the foreground (omit -d)
+  --server-url <url>        ARK server URL for setup (default: http://localhost:7070)
+  --explorer-url <url>      Explorer URL for setup (default: http://chopsticks:3000)
+  --password <value>        Nigiri password used during setup (default: secret)
   --help, -h                Show this help text
 
 Additional arguments following "--" are passed directly to docker compose.`)

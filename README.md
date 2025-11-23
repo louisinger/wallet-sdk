@@ -202,6 +202,9 @@ nigiri start --ark
 # build + start the arkd wallet/server stack
 npx @arklabs/regtest-env up
 
+# run the Nigiri-based provisioning routine (wallet init, faucets, ark client init)
+npx @arklabs/regtest-env setup
+
 # stream logs or inspect status
 npx @arklabs/regtest-env logs -f
 npx @arklabs/regtest-env status
@@ -210,7 +213,7 @@ npx @arklabs/regtest-env status
 npx @arklabs/regtest-env down
 ```
 
-For convenience, the same commands are exposed through pnpm scripts (`pnpm regtest`, `pnpm regtest:down`, etc.).
+For convenience, the same commands are exposed through pnpm scripts (`pnpm regtest`, `pnpm regtest:setup`, `pnpm regtest:down`, etc.). The default `pnpm regtest` script runs both `up` and `setup` so the environment is ready for integration tests in one step.
 
 ### Releasing
 

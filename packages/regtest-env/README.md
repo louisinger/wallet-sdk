@@ -16,6 +16,9 @@ nigiri start --ark
 # Start/up the Ark services in detached mode
 npx @arklabs/regtest-env up
 
+# Run the provisioning routine (wallet init, faucets, ark client init)
+npx @arklabs/regtest-env setup
+
 # Follow logs
 npx @arklabs/regtest-env logs -f
 
@@ -32,6 +35,7 @@ npx @arklabs/regtest-env down
 | `build` | Rebuilds both images. |
 | `logs` | Streams logs from both containers (`docker compose logs`). |
 | `ps` / `status` | Shows container status. |
+| `setup` | Runs the same Nigiri-based provisioning script used by `wallet-sdk/test/setup.js`. |
 
 ### Options
 
@@ -42,9 +46,12 @@ npx @arklabs/regtest-env down
 | `--network <name>` | External Docker network to join (defaults to `nigiri`). |
 | `--project-name <name>` | Compose project name prefix (defaults to `ark-regtest`). |
 | `--foreground` | When used with `up`, leaves containers attached (no `-d`). |
+| `--server-url <url>` | Override the arkd URL that the setup routine talks to (defaults to `http://localhost:7070`). |
+| `--explorer-url <url>` | Override the explorer URL passed to `nigiri ark init` (defaults to `http://chopsticks:3000`). |
+| `--password <value>` | Password used for both arkd wallet + ark client operations (defaults to `secret`). |
 | `--help` | Prints usage information. |
 
-Environment variables `ARK_BRANCH`, `ARK_VERSION`, and `NIGIRI_NETWORK` offer the same overrides if you prefer configuring via the shell.
+Environment variables `ARK_BRANCH`, `ARK_VERSION`, `NIGIRI_NETWORK`, `ARK_SERVER_URL`, `ARK_EXPLORER_URL`, and `ARK_PASSWORD` offer the same overrides if you prefer configuring via the shell.
 
 ## Notes
 
