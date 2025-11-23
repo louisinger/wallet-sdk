@@ -1,0 +1,26 @@
+{
+  "name": "@arklabs/regtest-env",
+  "version": "0.0.1",
+  "description": "Spin up the Ark regtest dependencies (arkd + arkd-wallet) using Docker Compose",
+  "license": "MIT",
+  "bin": {
+    "ark-regtest": "bin/regtest.js"
+  },
+  "files": [
+    "bin",
+    "docker-compose.yml",
+    "server.Dockerfile",
+    "wallet.Dockerfile",
+    "README.md"
+  ],
+  "keywords": [
+    "ark",
+    "bitcoin",
+    "regtest",
+    "docker"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Ark Labs"
+}

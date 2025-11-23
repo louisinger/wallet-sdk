@@ -191,6 +191,27 @@ pnpm test:watch
 pnpm test:coverage
 ```
 
+### Local Regtest Environment
+
+You can boot the Ark services required by the integration tests with the bundled npm package:
+
+```bash
+# ensure nigiri is running so the external network exists
+nigiri start --ark
+
+# build + start the arkd wallet/server stack
+npx @arklabs/regtest-env up
+
+# stream logs or inspect status
+npx @arklabs/regtest-env logs -f
+npx @arklabs/regtest-env status
+
+# tear everything down
+npx @arklabs/regtest-env down
+```
+
+For convenience, the same commands are exposed through pnpm scripts (`pnpm regtest`, `pnpm regtest:down`, etc.).
+
 ### Releasing
 
 ```bash
